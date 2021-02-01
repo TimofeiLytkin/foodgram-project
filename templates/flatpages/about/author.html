@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ flatpage.title }}{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'pages/index.css' %}">
+{% endblock %}
+{% block header %}
+    {% if request.user.is_authenticated %}
+        {%include 'headerAuth.html' %}
+    {% else %}
+        {%include 'headerNotAuth.html' %}
+    {% endif %}
+{% endblock %}
+{% block content %}
+<div class="main__header">
+    <h1 class="main__title">Об авторе</h1>
+</div
+
+<img src="static/images/me.jpg">
+<p>Меня зовут Тимофей, это мой дипломный проект по специальности "Разработчик Python" на Яндекс Практикуме.
+За 9 месяцев я научилась писать серверную часть сайтов, пользоваться командной строкой, программировать на языке Python,
+решать алгоритмические задачи, программировать API. </p>
+<p>Спасибо, что дочитали до конца!</p>
+{% endblock content %}
