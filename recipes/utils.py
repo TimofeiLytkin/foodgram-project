@@ -12,9 +12,9 @@ def filter_tag(request):
 
 def get_tag(tags):
     tag_dict = {
-        'Завтрак': 'breakfast',
-        'Обед': 'lunch',
-        'Ужин': 'dinner',
+        Tag.TITLE_BREAKFAST_RU: Tag.TITLE_BREAKFAST_EN,
+        Tag.TITLE_LUNCH_RU: Tag.TITLE_LUNCH_EN,
+        Tag.TITLE_DINNER_RU: Tag.TITLE_DINNER_EN
     }
     return [tag_dict[item] for item in tags]
 
@@ -32,7 +32,6 @@ def save_recipe(request, form):
         objs = []
 
         for key, value in form.data.items():
-            print(key, value)
             if 'nameIngredient' in key:
                 title = value
             elif 'valueIngredient' in key:
@@ -48,6 +47,5 @@ def save_recipe(request, form):
                     )
                 )
         IngredientAmount.objects.bulk_create(objs)
-        return None
     except IntegrityError:
         return 400

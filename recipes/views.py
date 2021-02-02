@@ -3,6 +3,8 @@ from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+
+from foodgram.settings import RECIPES_ON_PAGE
 from users.models import User
 
 from recipes.forms import RecipeForm
@@ -12,18 +14,12 @@ from recipes.utils import filter_tag, get_tag, save_recipe
 
 def index(request):
     recipe_list, tags = filter_tag(request)
-    paginator = Paginator(recipe_list, 6)
+    paginator = Paginator(recipe_list, RECIPES_ON_PAGE)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-
-    if request.user.is_authenticated:
-        template = 'indexAuth.html'
-    else:
-        template = 'indexNotAuth.html'
-
     return render(
         request,
-        template,
+        'indexAuth.html',
         {
             'page': page,
             'paginator': paginator,
@@ -35,35 +31,25 @@ def index(request):
 @login_required
 def create_recipe(request):
     tags = []
-    if request.method == 'POST':
-        form = RecipeForm(request.POST or None, files=request.FILES or None)
-
-        if form.is_valid():
-            response_code = save_recipe(request, form)
-            if response_code == 400:
-                return redirect('page_bad_request')
-            return redirect('recipes')
-    else:
-        form = RecipeForm(request.POST or None)
+    form = RecipeForm(request.POST or None, files=request.FILES or None)
+    if form.is_valid():
+        response_code = save_recipe(request, form)
+        if response_code == 400:
+            return redirect('page_bad_request')
+        return redirect('recipes')
     return render(request, 'formRecipe.html', {'form': form, 'tags': tags})
 
 
 def recipe_view(request, recipe_id):
     recipe = get_object_or_404(Recipe, id=recipe_id)
-
-    if request.user.is_authenticated:
-        template = 'singlePage.html'
-    else:
-        template = 'singlePageNotAuth.html'
-
-    return render(request, template, {'recipe': recipe})
+    return render(request, 'singlePage.html', {'recipe': recipe})
 
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
     recipe_list, tags = filter_tag(request)
     recipe_list = recipe_list.filter(author=author)
-    paginator = Paginator(recipe_list, 6)
+    paginator = Paginator(recipe_list, RECIPES_ON_PAGE)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     return render(
@@ -80,30 +66,24 @@ def profile(request, username):
 
 @login_required
 def recipe_edit(request, recipe_id):
-    tags = []
     recipe = get_object_or_404(Recipe, id=recipe_id)
     if request.user != recipe.author:
         return redirect('recipe_view', recipe_id=recipe_id)
-
-    if request.method == 'POST':
-        form = RecipeForm(
-            request.POST or None, files=request.FILES or None, instance=recipe
-        )
-
-        if form.is_valid():
-            recipe.ingredient.remove()
-            recipe.quantity.all().delete()
-            recipe.tags.all().delete()
-            response_code = save_recipe(request, form)
-            if response_code == 400:
-                return redirect('page_bad_request')
-            return redirect('recipe_view', recipe_id=recipe_id)
-    else:
-        tags_saved = recipe.tags.values_list('title', flat=True)
-        form = RecipeForm(instance=recipe)
-        form.fields['tag'].initial = list(tags_saved)
-        tags = get_tag(tags_saved)
-
+    form = RecipeForm(
+        request.POST or None, files=request.FILES or None, instance=recipe
+    )
+    if form.is_valid():
+        recipe.ingredients.remove()
+        recipe.quantity.all().delete()
+        recipe.tags.all().delete()
+        response_code = save_recipe(request, form)
+        if response_code == 400:
+            return redirect('page_bad_request')
+        return redirect('recipe_view', recipe_id=recipe_id)
+    tags_saved = recipe.tags.values_list('title', flat=True)
+    form = RecipeForm(instance=recipe)
+    form.fields['tag'].initial = list(tags_saved)
+    tags = get_tag(tags_saved)
     return render(
         request,
         'formChangeRecipe.html',
@@ -124,7 +104,7 @@ def recipe_delete(request, recipe_id):
 def favorites(request):
     recipe_list, tags = filter_tag(request)
     recipe_list = recipe_list.filter(in_favorite__user=request.user)
-    paginator = Paginator(recipe_list, 6)
+    paginator = Paginator(recipe_list, RECIPES_ON_PAGE)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     return render(
@@ -146,7 +126,7 @@ def shopping_list(request):
 @login_required
 def subscriptions(request):
     authors = User.objects.filter(following__user=request.user)
-    paginator = Paginator(authors, 6)
+    paginator = Paginator(authors, RECIPES_ON_PAGE)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     return render(
@@ -165,26 +145,11 @@ def get_ingredients(request):
     for ingredient in list:
         text = (
             f"{ingredient['ingredient__title'].capitalize()} "
-            f"({ingredient['ingredient__dimension']}) \u2014 {ingredient['amount']} \n"
+            f"({ingredient['ingredient__dimension']}) \u2014 "
+            f"{ingredient['amount']} \n"
         )
 
     filename = 'ingredients.txt'
     response = HttpResponse(text, content_type='text/plain')
     response['Content-Disposition'] = f'attachment; filename={filename}'
     return response
-
-
-def page_bad_request(request, exception):
-    return render(
-        request, 'error/400.html', {'path': request.path}, status=400
-    )
-
-
-def page_not_found(request, exception):
-    return render(
-        request, 'error/404.html', {'path': request.path}, status=404
-    )
-
-
-def server_error(request):
-    return render(request, 'error/500.html', status=500)

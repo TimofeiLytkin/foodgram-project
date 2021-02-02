@@ -1,19 +1,14 @@
 from django.shortcuts import get_object_or_404
-from recipes.models import Ingredient, Recipe
 from rest_framework import filters, generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from users.models import User
-
 from api.models import Favorite, Purchase, Subscribe
-from api.serializers import (
-    FavoriteSerializer,
-    IngredientSerializer,
-    PurchaseSerializer,
-    SubscribeSerializer
-)
+from api.serializers import (FavoriteSerializer, IngredientSerializer,
+                             PurchaseSerializer, SubscribeSerializer)
+from recipes.models import Ingredient, Recipe
+from users.models import User
 
 
 class CreateResponseView:
@@ -48,9 +43,7 @@ class FavoriteDeleteView(APIView):
     def delete(self, request, id):
         recipe = get_object_or_404(Recipe, id=id)
         favorite = recipe.in_favorite.filter(user=request.user)
-        if favorite.delete():
-            return Response({"success": True})
-        return Response({"success": False})
+        return Response({"success": bool(favorite.delete())})
 
 
 class PurchaseCreateView(CreateResponseView, generics.CreateAPIView):
@@ -66,9 +59,7 @@ class PurchaseDeleteView(APIView):
     def delete(self, request, id):
         recipe = get_object_or_404(Recipe, id=id)
         purchase = recipe.in_purchases.filter(user=request.user)
-        if purchase.delete():
-            return Response({"success": True})
-        return Response({"success": False})
+        return Response({"success": bool(purchase.delete())})
 
 
 class SubscribeCreateView(CreateResponseView, generics.CreateAPIView):
@@ -84,6 +75,4 @@ class SubscribeDeleteView(APIView):
     def delete(self, request, id):
         author = get_object_or_404(User, id=id)
         subscribe = author.following.filter(user=request.user)
-        if subscribe.delete():
-            return Response({"success": True})
-        return Response({"success": False})
+        return Response({"success": bool(subscribe.delete())})

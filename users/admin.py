@@ -1,19 +1,12 @@
 from django.contrib import admin, auth
 
-from .models import User
+from users.models import User
 
 
 class Admin(auth.admin.UserAdmin):
-
-    list_filter = (
-        "username",
-        "email",
-    )
-    search_fields = (
-        "^username",
-        "^email",
-    )
-    ordering = ("username",)
+    list_filter = ('username', 'email',)
+    search_fields = ('^username', '^email',)
+    ordering = ('username',)
 
 
 admin.site.register(User, Admin)

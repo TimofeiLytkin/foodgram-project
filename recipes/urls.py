@@ -14,7 +14,7 @@ urlpatterns = [
         name='recipe_delete',
     ),
     path('recipes/new/', views.create_recipe, name='create_recipe'),
-    path('recipes/<username>/', views.profile, name='profile'),
+    path('recipes/<str:username>/', views.profile, name='profile'),
     path('recipes/', views.index, name='recipes'),
     path('favorites/', views.favorites, name='favorites'),
     path('purchases/', views.shopping_list, name='purchases'),

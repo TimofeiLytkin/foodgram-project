@@ -2,10 +2,7 @@
 {% load static %}
 {% block title %}Вы вышли из системы{% endblock %}
 {% block css %}
-<link rel="stylesheet" href="{% static 'pages/index.css' %}">
-{% endblock %}
-{% block header %}
-    {%include 'headerNotAuth.html' %}
+    <link rel="stylesheet" href="{% static 'pages/index.css' %}">
 {% endblock %}
 {% block content %}
 <div class="main__header">
@@ -15,4 +12,5 @@
     <div class="custom-center-block">
             <p class="custom-text-block">Спасибо, что воспользовались нашим сайтом. Вы вышли из своей учётной записи. Ждём вас снова!</p>
     </div>
+</div>
 {% endblock content %}

@@ -1,15 +1,13 @@
-from recipes.models import Ingredient, Recipe
-from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from users.models import User
-
+from recipes.models import Ingredient, Recipe
 from api.models import Favorite, Purchase, Subscribe
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
-
     id = serializers.SlugRelatedField(
         slug_field='id', queryset=Recipe.objects.all(), source='recipe'
     )
@@ -26,14 +24,13 @@ class FavoriteSerializer(serializers.ModelSerializer):
             )
         ]
 
-    def validate_id(self, value):
-
+    def validate(self, attrs):
         user = self.context['request'].user
-        if user == value.author:
+        if user == attrs['recipe'].author:
             raise ValidationError(
                 'Нельзя добавить в избранное свой собственный рецепт'
             )
-        return value
+        return attrs
 
     def create(self, validated_data):
         if 'user' not in validated_data:
@@ -42,7 +39,6 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 
 class PurchaseSerializer(serializers.ModelSerializer):
-
     id = serializers.SlugRelatedField(
         slug_field='id', queryset=Recipe.objects.all(), source='recipe'
     )
@@ -66,7 +62,6 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
 
 class SubscribeSerializer(serializers.ModelSerializer):
-
     id = serializers.SlugRelatedField(
         slug_field='id', queryset=User.objects.all(), source='author'
     )
@@ -83,12 +78,11 @@ class SubscribeSerializer(serializers.ModelSerializer):
             )
         ]
 
-    def validate_id(self, value):
-
+    def validate(self, attrs):
         user = self.context['request'].user
-        if user == value:
+        if user == attrs['author']:
             raise ValidationError('Нельзя подписаться на себя')
-        return value
+        return attrs
 
     def create(self, validated_data):
         if 'user' not in validated_data:

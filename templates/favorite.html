@@ -2,14 +2,13 @@
 {% load static %}
 {% block title %}Избранное{% endblock %}
 {% block css %}
-<link rel="stylesheet" href="{% static 'pages/index.css' %}">
+    <link rel="stylesheet" href="{% static 'pages/index.css' %}">
 {% endblock %}
-{% block header %}{%include 'headerAuth.html' %}{% endblock %}
 {% block content %}
     {% load user_filters %}
 <div class="main__header">
     <h1 class="main__title">Избранное</h1>
-    {% include 'filterByTagIndex.html' %}
+    {% include 'includes/filterByTagIndex.html' %}
 </div>
 <div class="card-list">
     {% load thumbnail %}
@@ -49,16 +48,16 @@
     {% endfor %}
 </div>
 {% if page.has_other_pages %}
-    {% include "paginator.html" with items=page paginator=paginator tags=tags%}
+    {% include "includes/paginator.html" with items=page paginator=paginator tags=tags %}
 {% endif %}
 {% endblock content %}
 {% block style %}
-<script src="{% static './js/components/MainCards.js' %}"></script>
-<script src="{% static './js/components/Purchases.js' %}"></script>
-<script src="{% static './js/components/Favorites.js' %}"></script>
-<script src="{% static './js/config/config.js' %}"></script>
-<script src="{% static './js/components/CardList.js' %}"></script>
-<script src="{% static './js/components/Header.js' %}"></script>
-<script src="{% static './js/api/Api.js' %}"></script>
-<script src="{% static 'favorite.js' %}"></script>
+    <script src="{% static './js/components/MainCards.js' %}"></script>
+    <script src="{% static './js/components/Purchases.js' %}"></script>
+    <script src="{% static './js/components/Favorites.js' %}"></script>
+    <script src="{% static './js/config/config.js' %}"></script>
+    <script src="{% static './js/components/CardList.js' %}"></script>
+    <script src="{% static './js/components/Header.js' %}"></script>
+    <script src="{% static './js/api/Api.js' %}"></script>
+    <script src="{% static 'favorite.js' %}"></script>
 {% endblock style %}

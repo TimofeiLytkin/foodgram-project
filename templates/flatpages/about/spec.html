@@ -2,19 +2,12 @@
 {% load static %}
 {% block title %}{{ flatpage.title }}{% endblock %}
 {% block css %}
-<link rel="stylesheet" href="{% static 'pages/index.css' %}">
-{% endblock %}
-{% block header %}
-    {% if request.user.is_authenticated %}
-        {%include 'headerAuth.html' %}
-    {% else %}
-        {%include 'headerNotAuth.html' %}
-    {% endif %}
+    <link rel="stylesheet" href="{% static 'pages/index.css' %}">
 {% endblock %}
 {% block content %}
 <div class="main__header">
     <h1 class="main__title">Технологии</h1>
-</div
+</div>
 <ul>
   <li>
       Python + Django
@@ -30,5 +23,4 @@
   </li>
 
 </ul>
-
 {% endblock content %}

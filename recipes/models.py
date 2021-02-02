@@ -26,11 +26,17 @@ class Recipe(models.Model):
         validators=[validate_file_size],
         verbose_name='Изображение'
     )
-    ingredient = models.ManyToManyField(
+    ingredients = models.ManyToManyField(
         "Ingredient",
         related_name="ingredients",
         through="IngredientAmount",
+        verbose_name='Ингредиенты'
     )
+
+    class Meta:
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
+        ordering = ('-pub_date',)
 
     def __str__(self):
         return self.title
@@ -44,11 +50,6 @@ class Recipe(models.Model):
 
     image_img.short_description = 'Изображение'
 
-    class Meta:
-        verbose_name = 'Рецепт'
-        verbose_name_plural = 'Рецепты'
-        ordering = ('-pub_date',)
-
 
 class Ingredient(models.Model):
     """ORM-модель 'Ингредиент'."""
@@ -57,14 +58,18 @@ class Ingredient(models.Model):
         max_length=16, verbose_name='Eдиница измерения'
     )
 
-    def __str__(self):
-        return f'{self.title}, {self.dimension}'
-
     class Meta:
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
-        unique_together = ('title', 'dimension')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'dimension'], name='unique_ingredients'
+            )
+        ]
         ordering = ('title',)
+
+    def __str__(self):
+        return f'{self.title}, {self.dimension}'
 
 
 class IngredientAmount(models.Model):
@@ -92,20 +97,26 @@ class IngredientAmount(models.Model):
 
 class Tag(models.Model):
     """ORM-модель 'Тег'."""
-    COLOR = {
-        'Завтрак': 'orange',
-        'Обед': 'green',
-        'Ужин': 'purple'
-    }
-    SLUG = {
-        'Завтрак': 'b',
-        'Обед': 'l',
-        'Ужин': 'd'
-    }
+    COLOR_ORANGE = 'orange'
+    COLOR_GREEN = 'green'
+    COLOR_PURPLE = 'purple'
+
+    SLUG_BREAKFAST = 'b'
+    SLUG_LUNCH = 'l'
+    SLUG_DINNER = 'd'
+
+    TITLE_BREAKFAST_RU = 'Завтрак'
+    TITLE_LUNCH_RU = 'Обед'
+    TITLE_DINNER_RU = 'Ужин'
+
+    TITLE_BREAKFAST_EN = 'breakfast'
+    TITLE_LUNCH_EN = 'lunch'
+    TITLE_DINNER_EN = 'dinner'
+
     TITLE = (
-        ('Завтрак', 'Завтрак'),
-        ('Обед', 'Обед'),
-        ('Ужин', 'Ужин')
+        (TITLE_BREAKFAST_RU, TITLE_BREAKFAST_RU),
+        (TITLE_LUNCH_RU, TITLE_LUNCH_RU),
+        (TITLE_DINNER_RU, TITLE_DINNER_RU)
     )
 
     title = models.CharField(
@@ -126,18 +137,25 @@ class Tag(models.Model):
         verbose_name='Цвет'
     )
 
+    class Meta:
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
+
     def __str__(self):
         return self.title
 
     def _generate_color_and_slug(self):
         value = self.title
-        self.color = self.COLOR[value]
-        self.slug = self.SLUG[value]
+        if value == self.TITLE_BREAKFAST_RU:
+            self.color = self.COLOR_ORANGE
+            self.slug = self.SLUG_BREAKFAST
+        elif value == self.TITLE_LUNCH_RU:
+            self.color = self.COLOR_GREEN
+            self.slug = self.SLUG_LUNCH
+        else:
+            self.color = self.COLOR_PURPLE
+            self.slug = self.SLUG_DINNER
 
     def save(self, *args, **kwargs):
         self._generate_color_and_slug()
         super().save(*args, **kwargs)
-
-    class Meta:
-        verbose_name = 'Тег'
-        verbose_name_plural = 'Теги'

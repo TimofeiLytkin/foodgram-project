@@ -2,14 +2,13 @@
 {% load static %}
 {% block title %}Рецепты{% endblock %}
 {% block css %}
-<link rel="stylesheet" href="{% static 'pages/index.css' %}">
+    <link rel="stylesheet" href="{% static 'pages/index.css' %}">
 {% endblock %}
-{% block header %}{%include 'headerAuth.html' %}{% endblock %}
 {% block content %}
-    {% load user_filters %}
+{% load user_filters %}
 <div class="main__header">
     <h1 class="main__title">Рецепты</h1>
-    {% include 'filterByTagIndex.html' %}
+    {% include 'includes/filterByTagIndex.html' %}
 </div>
 <div class="card-list">
     {% load thumbnail %}
@@ -26,40 +25,41 @@
             </ul>
             <div class="card__items card__items_column">
                 <p class="card__text"><span class="icon-time"></span> {{ recipe.duration }} мин.</p>
-                <p class="card__text"><span class="icon-user"></span> <a href="{% url 'profile' recipe.author %}"
-                        style="color: black">{{ recipe.author.get_full_name }}</a></p>
+                <p class="card__text"><span class="icon-user"></span> <a href="{% url 'profile' recipe.author %}" style="color: black">{{ recipe.author.get_full_name }}</a></p>
             </div>
         </div>
-        <div class="card__footer">
-            {% if not recipe|in_shopping_list:request.user %}
-                <button class="button button_style_light-blue" name="purchases" data-out ><span class="icon-plus button__icon"></span>Добавить в покупки</button>
-            {% else %}
-                <button class="button button_style_light-blue-outline" name="purchases"><span class="icon-check button__icon"></span>Рецепт добавлен</button>
-            {% endif %}
-            {% if request.user != recipe.author %}
-                {% if not recipe|in_favorites:request.user %}
-                    <button class="button button_style_none" name="favorites" data-out><span class="icon-favorite"></span></button>
-                {% elif recipe|in_favorites:request.user %}
-                    <button class="button button_style_none" name="favorites" ><span class="icon-favorite icon-favorite_active"></span></button>
+        {% if request.user.is_authenticated %}
+            <div class="card__footer">
+                {% if not recipe|in_shopping_list:request.user %}
+                    <button class="button button_style_light-blue" name="purchases" data-out ><span class="icon-plus button__icon"></span>Добавить в покупки</button>
+                {% else %}
+                    <button class="button button_style_light-blue-outline" name="purchases"><span class="icon-check button__icon"></span>Рецепт добавлен</button>
                 {% endif %}
-            {% endif %}
-        </div>
+                {% if request.user != recipe.author %}
+                    {% if not recipe|in_favorites:request.user %}
+                        <button class="button button_style_none" name="favorites" data-out><span class="icon-favorite"></span></button>
+                    {% elif recipe|in_favorites:request.user %}
+                        <button class="button button_style_none" name="favorites" ><span class="icon-favorite icon-favorite_active"></span></button>
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% endif %}
     </div>
     {% endthumbnail %}
     {% endfor %}
 </div>
 {% if page.has_other_pages %}
-    {% include "paginator.html" with items=page paginator=paginator tags=tags%}
+    {% include "includes/paginator.html" with items=page paginator=paginator tags=tags%}
 {% endif %}
 {% endblock content %}
 {% block style %}
-<script src="{% static './js/components/MainCards.js' %}"></script>
-<script src="{% static './js/components/Purchases.js' %}"></script>
-<script src="{% static './js/components/Favorites.js' %}"></script>
-<script src="{% static './js/components/Subscribe.js' %}"></script>
-<script src="{% static './js/config/config.js' %}"></script>
-<script src="{% static './js/components/CardList.js' %}"></script>
-<script src="{% static './js/components/Header.js' %}"></script>
-<script src="{% static './js/api/Api.js' %}"></script>
-<script src="{% static 'indexAuth.js' %}"></script>
+    <script src="{% static './js/components/MainCards.js' %}"></script>
+    <script src="{% static './js/components/Purchases.js' %}"></script>
+    <script src="{% static './js/components/Favorites.js' %}"></script>
+    <script src="{% static './js/components/Subscribe.js' %}"></script>
+    <script src="{% static './js/config/config.js' %}"></script>
+    <script src="{% static './js/components/CardList.js' %}"></script>
+    <script src="{% static './js/components/Header.js' %}"></script>
+    <script src="{% static './js/api/Api.js' %}"></script>
+    <script src="{% static 'indexAuth.js' %}"></script>
 {% endblock style %}

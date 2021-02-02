@@ -31,20 +31,22 @@ class TestUser(TestCase):
         response = self.auth_client.get(
             reverse('profile', kwargs={'username': self.user})
         )
-        assert response.status_code == 200, \
+        assert response.status_code == 200, (
             'Пользователь не может перейти на страницу зарег. пользователя'
-        assert response.context['username'] == self.user.username, \
+        )
+        assert response.context['username'] == self.user.username, (
             'Username из url не совпадает с тем что на странице'
+        )
 
     def test_error_404(self):
         response = self.auth_client.get(
             reverse('profile', kwargs={'username': self.user_not_found})
         )
-        print(response)
 
-        assert response.status_code == 404, \
-            'При доступе к страницы несуществующего пользователя не ' \
+        assert response.status_code == 404, (
+            'При доступе к страницы несуществующего пользователя не '
             'возвращается ошибка 404'
+        )
 
     def test_auth_client_create_recipe_post(self):
         self.auth_client.post(
@@ -58,10 +60,12 @@ class TestUser(TestCase):
             }
         )
         recipes = Recipe.objects.all()
-        assert 'text1' in [recipe.text for recipe in recipes], \
+        assert 'text1' in [recipe.text for recipe in recipes], (
             'Текс созданного рецепта не совпадает с тем что в БД (POST)'
-        assert recipes.count() == 1, \
+        )
+        assert recipes.count() == 1, (
             'Рецепт не был создан зарегестрированным пользователем (POST)'
+        )
 
     def test_auth_client_create_recipe_get(self):
         self.auth_client.get(
@@ -74,8 +78,9 @@ class TestUser(TestCase):
             }
         )
         recipes = Recipe.objects.all()
-        assert recipes.count() == 0, \
+        assert recipes.count() == 0, (
             'Рецепт был создан зарегестрированным пользователем (GET)'
+        )
 
     def test_nonauth_client_create_recipe_post(self):
         self.nonauth_client.post(
@@ -88,13 +93,15 @@ class TestUser(TestCase):
             }
         )
         recipes = Recipe.objects.all()
-        assert recipes.count() == 0, \
+        assert recipes.count() == 0, (
             'Рецепт был создан незарегестрированным пользователем (POST)'
+        )
 
         response = self.nonauth_client.get(reverse('create_recipe'))
-        assert response.status_code == 302, \
-            'Незарегестрированный пользователь при попытке создать рецепт ' \
+        assert response.status_code == 302, (
+            'Незарегестрированный пользователь при попытке создать рецепт '
             'не был перенаправлен (POST)'
+        )
 
     def test_nonauth_client_create_recipe_get(self):
         self.nonauth_client.get(
@@ -109,10 +116,12 @@ class TestUser(TestCase):
         )
 
         recipes = Recipe.objects.all()
-        assert recipes.count() == 0, \
+        assert recipes.count() == 0, (
             'Рецепт был создан незарегестрированным пользователем (GET)'
+        )
 
         response = self.nonauth_client.get(reverse('create_recipe'))
-        assert response.status_code == 302, \
-            'Незарегестрированный пользователь при попытке создать рецепт ' \
+        assert response.status_code == 302, (
+            'Незарегестрированный пользователь при попытке создать рецепт '
             'не был перенаправлен (GET)'
+        )
