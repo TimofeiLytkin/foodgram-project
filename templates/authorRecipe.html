@@ -8,7 +8,9 @@
     {% load user_filters %}
     <div class="main__header">
         <h1 class="main__title">{{ page.0.author.get_full_name }}</h1>
-        {% include 'includes/filterByTag.html' %}
+        {% with value='request.resolver_match.url_name username' %}
+            {% include 'includes/filterByTag.html' %}
+        {% endwith %}
     </div>
     <div class="author-subscribe" data-author="{{ page.0.author_id }}">
         <p style="padding: 0 0 2em 0;">

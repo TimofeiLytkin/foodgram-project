@@ -80,14 +80,10 @@ def recipe_edit(request, recipe_id):
         if response_code == 400:
             return redirect('page_bad_request')
         return redirect('recipe_view', recipe_id=recipe_id)
-    tags_saved = recipe.tags.values_list('title', flat=True)
-    form = RecipeForm(instance=recipe)
-    form.fields['tag'].initial = list(tags_saved)
-    tags = get_tag(tags_saved)
     return render(
         request,
         'formChangeRecipe.html',
-        {'form': form, 'recipe': recipe, 'tags': tags},
+        {'form': form, 'recipe': recipe},
     )
 
 

@@ -8,7 +8,9 @@
     {% load user_filters %}
 <div class="main__header">
     <h1 class="main__title">Избранное</h1>
-    {% include 'includes/filterByTagIndex.html' %}
+    {% with value='request.resolver_match.url_name' %}
+        {% include 'includes/filterByTag.html' %}
+    {% endwith %}
 </div>
 <div class="card-list">
     {% load thumbnail %}

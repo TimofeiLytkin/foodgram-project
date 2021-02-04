@@ -8,7 +8,9 @@
 {% load user_filters %}
 <div class="main__header">
     <h1 class="main__title">Рецепты</h1>
-    {% include 'includes/filterByTagIndex.html' %}
+    {% with value='request.resolver_match.url_name' %}
+        {% include 'includes/filterByTag.html' %}
+    {% endwith %}
 </div>
 <div class="card-list">
     {% load thumbnail %}
@@ -49,7 +51,7 @@
     {% endfor %}
 </div>
 {% if page.has_other_pages %}
-    {% include "includes/paginator.html" with items=page paginator=paginator tags=tags%}
+    {% include "includes/paginator.html" with items=page paginator=paginator tags=tags %}
 {% endif %}
 {% endblock content %}
 {% block style %}
