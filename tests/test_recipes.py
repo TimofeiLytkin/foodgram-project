@@ -14,7 +14,9 @@ class TestUser(TestCase):
         self.auth_client = Client()
         self.nonauth_client = Client()
 
-        self.user = User.objects.create_user("user1", "user1@test.com", "12345")
+        self.user = User.objects.create_user(
+            'user1', 'user1@test.com', '12345'
+        )
         self.user.save()
         self.auth_client.force_login(self.user)
         self.user_not_found = 'user2'

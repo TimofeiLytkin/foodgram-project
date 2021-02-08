@@ -8,8 +8,8 @@ from foodgram.settings import RECIPES_ON_PAGE
 from users.models import User
 
 from recipes.forms import RecipeForm
-from recipes.models import Recipe
-from recipes.utils import filter_tag, get_tag, save_recipe
+from recipes.models import Recipe, Ingredient, IngredientAmount, Tag
+from recipes.utils import filter_tag, get_dict_ingredients
 
 
 def index(request):
@@ -30,14 +30,28 @@ def index(request):
 
 @login_required
 def create_recipe(request):
-    tags = []
     form = RecipeForm(request.POST or None, files=request.FILES or None)
+    user = get_object_or_404(User, username=request.user)
+    ingredients = get_dict_ingredients(request)
     if form.is_valid():
-        response_code = save_recipe(request, form)
-        if response_code == 400:
-            return redirect('page_bad_request')
+        recipe = form.save(commit=False)
+        recipe.author = user
+        recipe.save()
+
+        tags = form.cleaned_data['tag']
+        for tag in tags:
+            recipe_tag = Tag(recipe=recipe, title=tag)
+            recipe_tag.save()
+
+        for key, value in ingredients.items():
+            ingredient = get_object_or_404(Ingredient, title=key)
+            recipe_ing = IngredientAmount(
+                recipe=recipe, ingredient=ingredient, amount=value
+            )
+            recipe_ing.save()
+        form.save_m2m()
         return redirect('recipes')
-    return render(request, 'formRecipe.html', {'form': form, 'tags': tags})
+    return render(request, 'formRecipe.html', {'form': form})
 
 
 def recipe_view(request, recipe_id):
@@ -72,18 +86,33 @@ def recipe_edit(request, recipe_id):
     form = RecipeForm(
         request.POST or None, files=request.FILES or None, instance=recipe
     )
+    ingredients = get_dict_ingredients(request)
+
     if form.is_valid():
-        recipe.ingredients.remove()
-        recipe.quantity.all().delete()
-        recipe.tags.all().delete()
-        response_code = save_recipe(request, form)
-        if response_code == 400:
-            return redirect('page_bad_request')
+        IngredientAmount.objects.filter(recipe=recipe).delete()
+        Tag.objects.filter(recipe=recipe).delete()
+        recipe = form.save(commit=False)
+        recipe.author = request.user
+        recipe.save()
+
+        tags = form.cleaned_data['tag']
+        for tag in tags:
+            recipe_tag = Tag(recipe=recipe, title=tag)
+            recipe_tag.save()
+
+        for key, value in ingredients.items():
+            ingredient = get_object_or_404(Ingredient, title=key)
+            recipe_ing = IngredientAmount(
+                recipe=recipe, ingredient=ingredient, amount=value
+            )
+            recipe_ing.save()
+        form.save_m2m()
         return redirect('recipe_view', recipe_id=recipe_id)
+    tags = list(recipe.tags.values_list('title', flat=True))
     return render(
         request,
         'formChangeRecipe.html',
-        {'form': form, 'recipe': recipe},
+        {'form': form, 'recipe': recipe, 'tags': tags},
     )
 
 
@@ -131,21 +160,22 @@ def subscriptions(request):
 
 
 def get_ingredients(request):
+    text = ''
     list = (
         Recipe.objects.filter(in_purchases__user=request.user)
-        .order_by('ingredient__title')
-        .values('ingredient__title', 'ingredient__dimension')
-        .annotate(amount=Sum('quantity__amount'))
+        .order_by("ingredients__title")
+        .values("ingredients__title", "ingredients__dimension")
+        .annotate(amount=Sum("quantity__amount"))
     )
 
     for ingredient in list:
-        text = (
-            f"{ingredient['ingredient__title'].capitalize()} "
-            f"({ingredient['ingredient__dimension']}) \u2014 "
-            f"{ingredient['amount']} \n"
+        text += (
+            f"{ingredient['ingredients__title']} "
+            f"({ingredient['ingredients__dimension']})"
+            f" \u2014 {ingredient['amount']} \n"
         )
 
-    filename = 'ingredients.txt'
-    response = HttpResponse(text, content_type='text/plain')
-    response['Content-Disposition'] = f'attachment; filename={filename}'
+    filename = "ingredients.txt"
+    response = HttpResponse(text, content_type="text/plain")
+    response["Content-Disposition"] = f"attachment; filename={filename}"
     return response

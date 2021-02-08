@@ -1,14 +1,24 @@
-from pathlib import Path
 import os
+from pathlib import Path
+
+import environ
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = '63n5v%_kz!mj3l4o5&82xy27-qe43w+%y3zjw95yt8omikr8+-'
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-DEBUG = True
+SECRET_KEY = '3n5v%_kz!mj3l4o5&82xy27-qe43w+%y3zjw95yt8omikr8+-'
 
-ALLOWED_HOSTS = ['*']
+DEBUG = False
+
+ALLOWED_HOSTS = [
+    '178.154.235.251',
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0',
+]
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -63,9 +73,13 @@ TEMPLATES = [
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
     }
 }
 
@@ -96,6 +110,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static_dev'), )
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -119,6 +134,6 @@ REST_FRAMEWORK = {
 RECIPES_ON_PAGE = 6
 
 if DEBUG:
-    INSTALLED_APPS += ['debug_toolbar',]
-    MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware',]
-    INTERNAL_IPS = ['127.0.0.1',]
+    INSTALLED_APPS += ['debug_toolbar', ]
+    MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware', ]
+    INTERNAL_IPS = ['127.0.0.1', ]
